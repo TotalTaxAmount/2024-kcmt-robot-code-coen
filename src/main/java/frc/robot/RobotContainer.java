@@ -117,9 +117,40 @@ public class RobotContainer {
             new ShootCommand(intakeSubsystem, ledSubsystem)
     );
 
-    // ----------------------------------------------------------------------------------------
-    // ********************************* SECONDARY CONTROLLER *********************************
-    // ----------------------------------------------------------------------------------------
+    new JoystickButton(primaryController, XboxController.Button.kA.value).whileTrue(
+            new RunCommand(() -> {
+              ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe);
+            })
+    );
+
+    new JoystickButton(primaryController, XboxController.Button.kB.value).whileTrue(
+            new RunCommand(() -> {
+              ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off);
+            })
+    );
+
+    // SECONDARY CONTROLLER
+
+    // Spin up shooter fast: Left bumper
+//    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
+//            new SpinUpCommand(Target.SPEAKER, shooterSubsystem)
+//    );
+    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
+      new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
+    );
+
+
+    // Spin up shooter slow: Left trigger
+    new JoystickButton(secondaryController, XboxController.Axis.kLeftTrigger.value).whileTrue(
+            new SpinUpCommand(shooterSubsystem, Target.HIGH_PASS)
+    );
+
+//    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
+//            new RunCommand(() -> {
+//
+//              aimSubsystem.setAngle(Math.toRadians(45));
+//            }, aimSubsystem)
+//    );
 
 
     new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
