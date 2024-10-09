@@ -9,25 +9,18 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.commands.*;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.constants.AimConstants;
+import frc.robot.constants.Constants;
 import frc.robot.constants.DrivetrainConstants;
 import frc.robot.subsystems.*;
 import frc.robot.constants.Constants.Target;
 import frc.robot.utils.ConfigManager;
 import frc.robot.utils.Controller;
 import frc.robot.utils.NetworkTableUtils;
-import org.opencv.core.Mat;
-
-import javax.xml.crypto.dsig.XMLObject;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -37,22 +30,26 @@ import javax.xml.crypto.dsig.XMLObject;
  */
 public class RobotContainer {
   // Subsystems
-  SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
-  ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
-  IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-  AimSubsystem aimSubsystem = new AimSubsystem();
-  LEDSubsystem ledSubsystem = new LEDSubsystem();
+  private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+  private final AimSubsystem aimSubsystem = new AimSubsystem();
+  private final LEDSubsystem ledSubsystem = new LEDSubsystem();
 
   // Controllers
-  XboxController primaryController = new XboxController(0);
-  XboxController secondaryController = new XboxController(1);
+  private final XboxController primaryController = new XboxController(0);
+  private final XboxController secondaryController = new XboxController(1);
 
-  Controller testController = new Controller(2);
+  private final NetworkTableUtils NTModeInfo = new NetworkTableUtils("Mode Info");
 
   private final NetworkTableUtils NTTune = new NetworkTableUtils("Tune");
 
+  private Constants.Mode mode;
+
+  Controller testController = new Controller(2);
+
   // Auto Chooser
-  SendableChooser<Command> superSecretMissileTech = new SendableChooser<>();
+  private final SendableChooser<Command> superSecretMissileTech;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -92,38 +89,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureButtonBindings() {
-    // Default commands
-//    aimSubsystem.setDefaultCommand(
-//            new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.NOTE)
-//    );
-
-    // PRIMARY CONTROLLER
-
-    // Default drive command
     swerveSubsystem.setDefaultCommand(
-            new DriveCommands(
-                    swerveSubsystem,
-                    () -> primaryController.getLeftY() * DrivetrainConstants.drivingSpeedScalar/1.0,
-                    () -> primaryController.getLeftX() * DrivetrainConstants.drivingSpeedScalar/1.0,
-                    () -> primaryController.getRightX() * DrivetrainConstants.rotationSpeedScalar/1.0,
-                    true,
-                    true
-            )
-    );
-
-
-
-    aimSubsystem.setDefaultCommand(
-            new AimCommand(
-                    aimSubsystem,
-                    swerveSubsystem,
-                    primaryController,
-                    Target.DEFAULT
-            )
-    );
-
-    // Slow drive command: Right bumper
-    new JoystickButton(primaryController, XboxController.Button.kRightBumper.value).whileTrue(
             new DriveCommands(
                     swerveSubsystem,
                     () -> primaryController.getLeftY() * DrivetrainConstants.drivingSpeedScalar,
@@ -134,144 +100,47 @@ public class RobotContainer {
             )
     );
 
-    // Zero gyro: Y button
-    new JoystickButton(primaryController, XboxController.Button.kY.value).whileTrue(
-            new RunCommand(() -> swerveSubsystem.zeroGyro())
+    aimSubsystem.setDefaultCommand(
+            new AimCommand(
+                    aimSubsystem,
+                    swerveSubsystem,
+                    primaryController,
+                    Target.DEFAULT
+            )
     );
 
-    // Shoot(run intake forward): Left bumper
+    new JoystickButton(primaryController, XboxController.Button.kY.value).whileTrue(
+            new RunCommand(swerveSubsystem::zeroGyro)
+    );
+
     new JoystickButton(primaryController, XboxController.Button.kLeftBumper.value).whileTrue(
             new ShootCommand(intakeSubsystem, ledSubsystem)
     );
 
-    new JoystickButton(primaryController, XboxController.Button.kA.value).whileTrue(
-            new RunCommand(() -> {
-              ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe);
-            })
-    );
+    // ----------------------------------------------------------------------------------------
+    // ********************************* SECONDARY CONTROLLER *********************************
+    // ----------------------------------------------------------------------------------------
 
-    new JoystickButton(primaryController, XboxController.Button.kB.value).whileTrue(
-            new RunCommand(() -> {
-              ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off);
-            })
-    );
-
-    // SECONDARY CONTROLLER
-
-    // Spin up shooter fast: Left bumper
-//    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
-//            new SpinUpCommand(Target.SPEAKER, shooterSubsystem)
-//    );
-    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
-      new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
-    );
-
-
-    // Spin up shooter slow: Left trigger
-    new JoystickButton(secondaryController, XboxController.Axis.kLeftTrigger.value).whileTrue(
-            new SpinUpCommand(shooterSubsystem, Target.HIGH_PASS)
-    );
-
-//    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
-//            new RunCommand(() -> {
-//
-//              aimSubsystem.setAngle(Math.toRadians(45));
-//            }, aimSubsystem)
-//    );
-
-//    new JoystickButton(secondaryController, XboxController.Button.kA.value).whileTrue(
-//            new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.SPEAKER)
-//    );
-
-    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
-            new RunCommand(() -> intakeSubsystem.setNTSpeed(), intakeSubsystem)
-    ).whileFalse(
-            new RunCommand((() -> intakeSubsystem.setSpeed(0)))
-    );
-
-//    ).whileFalse(
-//            new RunCommand(() -> {
-//              aimSubsystem.runLeft(0.0);
-//              aimSubsystem.runRight(0.0);
-//            })
-//    );
-
-//    new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
-//            new RunCommand(() -> aimSubsystem.resetPID())
-//    );
-
-    // Intake + rotate to note: Right bumper
-    new JoystickButton(secondaryController, XboxController.Button.kRightBumper.value).whileTrue(
-//            new ParallelCommandGroup(
-//                    new RotateTo(swerveSubsystem, primaryController, Target.NOTE),
-                    new IntakeCommand(intakeSubsystem, ledSubsystem, false)
-//            )
-    );
 
     new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
-            new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
+            new RunCommand(() -> this.mode = Constants.Mode.INTAKE)
     );
 
-    new POVButton(secondaryController, 0).whileTrue(
-        new RunCommand(() -> intakeSubsystem.setSpeed(-0.3))
-    ).whileFalse(
-        new RunCommand(() -> intakeSubsystem.setSpeed(0.0))
+    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
+            new RunCommand(() -> this.mode = Constants.Mode.AMP)
+    );
+    new JoystickButton(secondaryController, XboxController.Button.kB.value).whileTrue(
+            new RunCommand(() -> this.mode = Constants.Mode.SPEAKER)
     );
 
-    new POVButton(secondaryController, 180).whileTrue(
-             new RunCommand(() -> {
-               aimSubsystem.resetEncoder();
-               aimSubsystem.resetPID();
-             })
-    );
-
-    new POVButton(secondaryController, 90).whileTrue(
-            new RunCommand(() -> ConfigManager.getInstance().saveDefault())
-    );
-
-    // Raise shooter + rotate to amp + spin up for amp: X button
-//    new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
-//            new ParallelCommandGroup(
-//                    new RotateTo(swerveSubsystem, primaryController, Target.AMP),
-//                    new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.AMP),
-//                    new SpinUpCommand(Target.AMP, shooterSubsystem)
-//
-//            )
-//    );
-
-    // Rotate to high pass + aim at high pass: Y button
-//    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
-//            new ParallelCommandGroup(
-//                    new RotateTo(swerveSubsystem, primaryController, Target.HIGH_PASS),
-//                    new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.HIGH_PASS)
-//            )
-//    );
-
-    // Rotate to low pass + aim at low pass: B button
-//    new JoystickButton(secondaryController, XboxController.Button.kB.value).whileTrue(
-//            new ParallelCommandGroup(
-//                    new RotateTo(swerveSubsystem, primaryController, Target.LOW_PASS),
-//                    new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.LOW_PASS)
-//            )
-//    );
-
-    // Rotate to speaker + aim at speaker: A button
     new JoystickButton(secondaryController, XboxController.Button.kA.value).whileTrue(
-//            new ParallelCommandGroup(
-//                    new RotateTo(swerveSubsystem, primaryController, Target.SPEAKER),
-//                    new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.SPEAKER)
-//            )
-            new RunCommand(() -> aimSubsystem.setAngle(Math.toRadians(30)), aimSubsystem)
+            new RunCommand(() -> this.mode = Constants.Mode.PASSING)
     );
-
-    new JoystickButton(secondaryController, XboxController.Button.kRightStick.value).whileTrue(
-            new ParallelCommandGroup(
-                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.AMP),
-                    new SpinUpCommand(shooterSubsystem, Target.AMP)
-            )
+    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
+            new RunCommand(() -> this.mode = Constants.Mode.OFF)
     );
-
   }
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -282,11 +151,23 @@ public class RobotContainer {
     return superSecretMissileTech.getSelected();
   }
 
+
   public void robotInit() {
   }
 
   public void enableInit() {
-    NTTune.setDouble("intake_notein_speed", ConfigManager.getInstance().get("intake_notein_speed", Double.class, 0.0));
+    for (Object key : ConfigManager.getInstance().getJson().keySet()) {
+        Object value = ConfigManager.getInstance().getJson().get(key);
+        if (value instanceof Double) {
+            NTTune.setDouble((String) key, (Double) value);
+        } else if (value instanceof Boolean) {
+            NTTune.setBoolean((String) key, (Boolean) value);
+        } else if (value instanceof String) {
+            NTTune.setString((String) key, (String) value);
+        } else {
+            System.out.println("[WARN] Value is an unknown type (" + value.getClass().getSimpleName() + ")");
+        }
+    }
     aimSubsystem.resetPID();
     ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off);
   }
@@ -294,7 +175,87 @@ public class RobotContainer {
   public void disableInit() {
     ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Rainbow);
 
-//    ConfigManager.getInstance().setDouble("intake_notein_speed", NTTune.getDouble("intake_notein_speed", 0));
     ConfigManager.getInstance().saveConfig();
+  }
+
+  // I promise chatgpt didn't write this javadoc
+  /**
+   * Schedules commands based on the current operational mode.
+   * <p>Possible modes include:
+   * <ul>
+   *   <li><b>Intake Mode:</b>
+   *     <ul>
+   *       <li>Ensure the shooter is fully lowered.</li>
+   *       <li>Shooter wheels are not spinning.</li>
+   *       <li>Run intake at designated speed.</li>
+   *       <li>Activate automatic note rotation.</li>
+   *       <li>Upon line break:
+   *         <ul>
+   *           <li>Stop intake wheels.</li>
+   *           <li>Switch robot mode to off.</li>
+   *         </ul>
+   *       </li>
+   *     </ul>
+   *   </li>
+   *   <li><b>Speaker Mode:</b>
+   *     <p>Initiates when within the designated side of the field. If odometry confirms this zone, the following actions commence:
+   *       <ul>
+   *         <li>Run shooter auto rotation to optimize shot angle.</li>
+   *         <li>Automatic rotation to speaker (can be overridden by the driver).</li>
+   *         <li>Start spinning up to shooting speed.</li>
+   *       </ul>
+   *     </p>
+   *   </li>
+   *   <li><b>Amp Mode:</b>
+   *     <p>Similar to Speaker Mode, but with different actions upon confirming zone:
+   *       <ul>
+   *         <li>Adjust shooter to approximately 90 degrees.</li>
+   *         <li>Spin up for shooting the amp.</li>
+   *         <li>Automatic rotation to align shooter with the amp.</li>
+   *       </ul>
+   *     </p>
+   *   </li>
+   *   <li><b>Passing Mode:</b>
+   *     <p>Similar to Speaker Mode, but targets the corner of the field without waiting for a specific zone.</p>
+   *   </li>
+   *   <li><b>Off Mode:</b>
+   *     <p>Only allows driving; intake is off, shooter is lowered, and no vision processing is active.</p>
+   *   </li>
+   * </ul>
+   * </p>
+   */
+  public void modesCommandScheduler() {
+    this.NTModeInfo.setString("Current mode", this.mode.toString());
+
+    CommandScheduler CSInstance = CommandScheduler.getInstance();
+    switch (this.mode) {
+      case INTAKE -> CSInstance.schedule(
+              new ParallelCommandGroup(
+                      new RunCommand(aimSubsystem::reset, aimSubsystem),
+                      new IntakeCommand(intakeSubsystem, ledSubsystem,false),
+                      new RotateTo(swerveSubsystem, primaryController, Target.NOTE).finallyDo(() -> this.mode = Constants.Mode.OFF)
+              )
+      );
+      case SPEAKER, AMP -> {
+        Target target = this.mode == Constants.Mode.SPEAKER ? Target.SPEAKER : Target.AMP;
+        if (swerveSubsystem.isCloseToUs()) {
+          CSInstance.schedule(
+                  new ParallelCommandGroup(
+                          new SpinUpCommand(shooterSubsystem, target),
+                          new AimCommand(aimSubsystem, swerveSubsystem, primaryController, target),
+                          new RotateTo(swerveSubsystem, primaryController, target)
+                  )
+          );
+        }
+      }
+      case PASSING -> CSInstance.schedule(
+              new ParallelCommandGroup(
+                      new SpinUpCommand(shooterSubsystem, Target.LOW_PASS /* Dont know if low or high rn*/),
+                      new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.LOW_PASS),
+                      new RotateTo(swerveSubsystem, primaryController, Target.LOW_PASS)
+              )
+      );
+      case OFF -> System.out.println("Nothing fancy");
+    }
   }
 }

@@ -179,6 +179,14 @@ public class ConfigManager {
         this.saveConfig();
      }
 
+    /**
+     * Get a {@link JSONObject} containing all the config
+     * @return A {@link JSONObject} with the config data
+     */
+     public JSONObject getJson() {
+         return this.json;
+     }
+
 
     /**
      * Save the config to the config file location
@@ -207,6 +215,6 @@ public class ConfigManager {
         } catch (IOException | ParseException e ) {
             System.out.println("[ERROR] An error occurred: " + e);
         }
-    return jObj;
+        return jObj;
     }
 }
