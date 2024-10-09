@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.Constants.Target;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.utils.ConfigManager;
 
 public class SpinUpCommand extends Command {
     private final ShooterSubsystem shooterSubsystem;
@@ -30,11 +31,11 @@ public class SpinUpCommand extends Command {
     public void execute() {
         switch (this.target) {
             case AMP, AMP_SHOOT ->
-                shooterSubsystem.setShooterSpeed(ShooterConstants.AMP_RPM);
+                shooterSubsystem.setShooterSpeed(ConfigManager.getInstance().get("amp_spinup_rpm", Double.class, ShooterConstants.AMP_RPM));
             case SPEAKER, LOW_PASS ->
-                shooterSubsystem.setShooterSpeed(ShooterConstants.SPEAKER_RPM);
+                shooterSubsystem.setShooterSpeed(ConfigManager.getInstance().get("speaker_spinup_rpm", Double.class, ShooterConstants.SPEAKER_RPM));
             case HIGH_PASS ->
-                shooterSubsystem.setShooterSpeed(ShooterConstants.PASS_RPM);
+                shooterSubsystem.setShooterSpeed(ConfigManager.getInstance().get("pass_spinup_rpm", Double.class, ShooterConstants.PASS_RPM));
         }
     }
 

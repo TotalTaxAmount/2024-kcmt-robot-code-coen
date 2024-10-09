@@ -11,6 +11,7 @@ import frc.robot.constants.DrivetrainConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.utils.ConfigManager;
 import frc.robot.utils.NetworkTableUtils;
 import frc.robot.utils.SwerveUtils;
 import frc.robot.utils.VisionUtils;
@@ -126,7 +127,7 @@ public class RotateTo extends Command {
                     (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) ? -Math.PI / 2 : Math.PI / 2);
         }
 
-        if (Math.abs(controller.getRightX()) > 0.05) {
+        if (Math.abs(controller.getRightX()) > ConfigManager.getInstance().get("rotateto_override_threshold", Double.class,0.05) /* 0.05 */) {
             swerveSubsystem.drive(
                     controller.getLeftY() * DrivetrainConstants.drivingSpeedScalar,
                     controller.getLeftX() * DrivetrainConstants.drivingSpeedScalar,

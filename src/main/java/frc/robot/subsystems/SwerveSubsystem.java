@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.DrivetrainConstants;
 import frc.robot.controllers.SwerveModuleControlller;
+import frc.robot.utils.ConfigManager;
 import frc.robot.utils.NetworkTableUtils;
 import frc.robot.utils.SwerveUtils;
 import frc.robot.utils.VisionUtils;
@@ -232,7 +233,7 @@ public class SwerveSubsystem extends SubsystemBase {
 //                    Timer.getFPGATimestamp() - (VisionUtils.getLatencyPipeline()/1000.0) - (VisionUtils.getLatencyCapture()/1000.0)
 //            );
             visionMeasurement.ifPresent(robotPose -> {
-                if (VisionUtils.getDistanceFromTagLimelight() > 3) return;
+                if (VisionUtils.getDistanceFromTagLimelight() > ConfigManager.getInstance().get("limelight_cutoff_dist_m", Double.class, 3.0)) return;
                 poseEstimator.addVisionMeasurement(
                     robotPose.toPose2d(),
                     Timer.getFPGATimestamp() - (VisionUtils.getLatencyPipeline()/1000.0) - (VisionUtils.getLatencyCapture()/1000.0)
@@ -241,7 +242,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             estimatedRobotPose.ifPresent(robotPose -> {
 
-                if (cam.getCameraTable().getEntry("targetPose").getDoubleArray(new double[]{})[0] - 0.4 > 4 ) return;
+                if (cam.getCameraTable().getEntry("targetPose").getDoubleArray(new double[]{})[0] - 0.4 > ConfigManager.getInstance().get("photon_cutoff_dist_m", Double.class, 4.0 )) return;
 
                 poseEstimator.addVisionMeasurement(
                     robotPose.estimatedPose.toPose2d(),
@@ -406,7 +407,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             double directionSlewRate;
             if (currentTranslationMagnitude != 0.0) {
-                directionSlewRate = Math.abs(DrivetrainConstants.directionSlewRate / currentTranslationMagnitude);
+                directionSlewRate = Math.abs(ConfigManager.getInstance().get("direction_slew_rate", Double.class, DrivetrainConstants.directionSlewRate) / currentTranslationMagnitude);
             } else {
                 directionSlewRate = 500.0; // super high number means slew is instantaneous
             }
@@ -473,7 +474,7 @@ public class SwerveSubsystem extends SubsystemBase {
             );
         }
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, DrivetrainConstants.maxSpeedMetersPerSecond);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, ConfigManager.getInstance().get("max_robot_speed_mps", Double.class, DrivetrainConstants.maxSpeedMetersPerSecond));
 
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
@@ -557,7 +558,7 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public boolean isCloseToUs() {
         assert DriverStation.getAlliance().isPresent();
-        double xThreshold = DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red) ? DrivetrainConstants.X_POS_THRESH_RED : DrivetrainConstants.X_POS_THRESH_BLUE; // TODO: I have no idea what this should be
+        double xThreshold = DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red) ? ConfigManager.getInstance().get("close_x_threshold_red", Double.class, DrivetrainConstants.X_POS_THRESH_RED) : ConfigManager.getInstance().get("close_x_threshold_blue", Double.class, DrivetrainConstants.X_POS_THRESH_BLUE); // TODO: I have no idea what this should be
 
         return DriverStation.getAlliance().get().equals(DriverStation.Alliance.Red) ? getPose().getX() >= xThreshold : getPose().getX() <= xThreshold; // TODO: Also not sure here
     }

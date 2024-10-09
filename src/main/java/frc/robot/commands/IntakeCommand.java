@@ -38,14 +38,14 @@ public class IntakeCommand extends Command {
     public void execute() { // TODO: WTH is all this
         ConfigManager configManager = ConfigManager.getInstance();
         if (!this.intakeSubsystem.getFrontLinebreak() || continuous) {
-            intakeSubsystem.setSpeed(0.3);
+            intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_normal_speed", Double.class, 0.3));
             startRotations = intakeSubsystem.getTopMotorRotations();
         } else {
             if (intakeSubsystem.getTopMotorRotations() - startRotations > rotationsUntilStop) {
                 intakeSubsystem.setSpeed(0);
                 this.done = true;
             } else {
-                intakeSubsystem.setSpeed(0.3);
+                intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_normal_speed", Double.class, 0.3));
                 ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe);
             }
         }

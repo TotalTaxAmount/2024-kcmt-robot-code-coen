@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.utils.ConfigManager;
 
 public class ShootCommand extends Command {
 
@@ -28,7 +29,7 @@ public class ShootCommand extends Command {
     @Override
     public void execute() {
 
-        intakeSubsystem.setSpeed(0.75);
+        intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_shoot_speed", Double.class, 0.75));
         if (!intakeSubsystem.getBackLinebreak()) {
             ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.RedStrobe);
         }

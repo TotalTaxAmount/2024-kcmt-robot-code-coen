@@ -1,7 +1,10 @@
 package frc.robot.utils;
 
 import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.Robot;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -11,6 +14,9 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Objects;
 
+/**
+ * Provides a way to tune stuff with network tables, and have the values persist over power offs or restarts
+ */
 public class ConfigManager {
     private static ConfigManager INSTANCE;
 
@@ -45,6 +51,13 @@ public class ConfigManager {
             }
         } catch (IOException e) {
             System.out.println("[WARN] Failed to create config file: " + e);
+            if (e.toString().contains("Permission")) {
+                System.out.printf("[INFO] If you are getting a permission denied error please try the following: " +
+                        "1. Connect the the roboRIO over ssh: `ssh admin@10.%s.%s.2`" +
+                        "2. Create file and change permissions: `touch %s && chown lvuser:lvuser %s`%n",
+                        String.valueOf(RobotController.getTeamNumber()).substring(0,2), String.valueOf(RobotController.getTeamNumber()).substring(2),
+                        configFile.getAbsolutePath(), configFile.getAbsolutePath());
+            }
         }
 
         this.json = parseConfig();
@@ -68,29 +81,47 @@ public class ConfigManager {
      * Get the default settings (used to create the json file if it does not exist)
      * @return A default json object
      */
-    @SuppressWarnings("unchecked")
     public JSONObject getDefault() {
-        JSONObject defaultSettings = new JSONObject();
+//        JSONObject defaultSettings = new JSONObject();
 
-        // INTAKE
-        defaultSettings.put("intake_notein_speed", 0.0);
-        defaultSettings.put("intake_shoot_speed", 0.0);
+//        // INTAKE
+//        defaultSettings.put("intake_notein_speed", 0.0);
+//        defaultSettings.put("intake_shoot_speed", 0.0);
+//
+//        // SHOOTER
+//        defaultSettings.put("shooter_speaker", 0.0);
+//        defaultSettings.put("shooter_high_pass", 0.0);
+//        defaultSettings.put("shooter_low_pass", 0.0);
+//        defaultSettings.put("shooter_amp", 0.0);
+//
+//        // ARM
+//        defaultSettings.put("placeholder", 0.0);
 
-        // SHOOTER
-        defaultSettings.put("shooter_speaker", 0.0);
-        defaultSettings.put("shooter_high_pass", 0.0);
-        defaultSettings.put("shooter_low_pass", 0.0);
-        defaultSettings.put("shooter_amp", 0.0);
-
-        // ARM
-        defaultSettings.put("placeholder", 0.0);
-
-        return defaultSettings;
+        return new JSONObject();
     }
 
     public void saveDefault() {
         this.json = getDefault();
         this.saveConfig();
+    }
+
+    /**
+     * Add all the config options to network tables
+     * should be run on robot power on.
+     */
+    public void initNT() {
+        for (Object key : this.json.keySet()) {
+            Object value = this.json.get(key);
+            if (value instanceof Double) {
+                NTTune.setDouble((String) key, (Double) value);
+            } else if (value instanceof Boolean) {
+                NTTune.setBoolean((String) key, (Boolean) value);
+            } else if (value instanceof String) {
+                NTTune.setString((String) key, (String) value);
+            } else {
+                System.out.println("[WARN] Value is an unknown type (" + value.getClass().getSimpleName() + ")");
+            }
+        }
     }
 
     /**
@@ -187,7 +218,6 @@ public class ConfigManager {
          return this.json;
      }
 
-
     /**
      * Save the config to the config file location
      */
@@ -217,4 +247,5 @@ public class ConfigManager {
         }
         return jObj;
     }
+
 }

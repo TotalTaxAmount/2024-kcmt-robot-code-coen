@@ -89,6 +89,9 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureButtonBindings() {
+    // =============================================================================
+    // ********************************DEFAULTS*************************************
+    // =============================================================================
     swerveSubsystem.setDefaultCommand(
             new DriveCommands(
                     swerveSubsystem,
@@ -96,7 +99,7 @@ public class RobotContainer {
                     () -> primaryController.getLeftX() * DrivetrainConstants.drivingSpeedScalar,
                     () -> primaryController.getRightX() * DrivetrainConstants.rotationSpeedScalar,
                     true,
-                    true
+                    ConfigManager.getInstance().get("enable_slew_rates", Boolean.class, true)
             )
     );
 
@@ -109,6 +112,10 @@ public class RobotContainer {
             )
     );
 
+    // =============================================================================
+    // ***************************PRIMARY CONTROLLER********************************
+    // =============================================================================
+
     new JoystickButton(primaryController, XboxController.Button.kY.value).whileTrue(
             new RunCommand(swerveSubsystem::zeroGyro)
     );
@@ -117,6 +124,7 @@ public class RobotContainer {
             new ShootCommand(intakeSubsystem, ledSubsystem)
     );
 
+    // TODO: Why this exist?
     new JoystickButton(primaryController, XboxController.Button.kA.value).whileTrue(
             new RunCommand(() -> {
               ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe);
@@ -129,28 +137,17 @@ public class RobotContainer {
             })
     );
 
-    // SECONDARY CONTROLLER
+    // =============================================================================
+    // **************************SECONDARY CONTROLLER*******************************
+    // =============================================================================
 
-    // Spin up shooter fast: Left bumper
-//    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
-//            new SpinUpCommand(Target.SPEAKER, shooterSubsystem)
-//    );
     new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
       new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
     );
 
-
-    // Spin up shooter slow: Left trigger
     new JoystickButton(secondaryController, XboxController.Axis.kLeftTrigger.value).whileTrue(
             new SpinUpCommand(shooterSubsystem, Target.HIGH_PASS)
     );
-
-//    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
-//            new RunCommand(() -> {
-//
-//              aimSubsystem.setAngle(Math.toRadians(45));
-//            }, aimSubsystem)
-//    );
 
 
     new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
@@ -175,7 +172,7 @@ public class RobotContainer {
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
+
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
@@ -184,21 +181,10 @@ public class RobotContainer {
 
 
   public void robotInit() {
+    ConfigManager.getInstance().initNT();
   }
 
   public void enableInit() {
-    for (Object key : ConfigManager.getInstance().getJson().keySet()) {
-        Object value = ConfigManager.getInstance().getJson().get(key);
-        if (value instanceof Double) {
-            NTTune.setDouble((String) key, (Double) value);
-        } else if (value instanceof Boolean) {
-            NTTune.setBoolean((String) key, (Boolean) value);
-        } else if (value instanceof String) {
-            NTTune.setString((String) key, (String) value);
-        } else {
-            System.out.println("[WARN] Value is an unknown type (" + value.getClass().getSimpleName() + ")");
-        }
-    }
     aimSubsystem.resetPID();
     ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off);
   }
@@ -263,8 +249,8 @@ public class RobotContainer {
       case INTAKE -> CSInstance.schedule(
               new ParallelCommandGroup(
                       new RunCommand(aimSubsystem::reset, aimSubsystem),
-                      new IntakeCommand(intakeSubsystem, ledSubsystem,false),
-                      new RotateTo(swerveSubsystem, primaryController, Target.NOTE).finallyDo(() -> this.mode = Constants.Mode.OFF)
+                      new IntakeCommand(intakeSubsystem, ledSubsystem,false).finallyDo(() -> this.mode = Constants.Mode.OFF),
+                      new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
               )
       );
       case SPEAKER, AMP -> {

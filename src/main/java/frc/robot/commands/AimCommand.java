@@ -10,6 +10,7 @@ import frc.robot.constants.AimConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.subsystems.AimSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.utils.ConfigManager;
 import frc.robot.utils.NetworkTableUtils;
 import frc.robot.utils.ShooterUtils;
 
@@ -85,9 +86,9 @@ public class AimCommand extends Command {
     private double calculateAngle(Pose2d robotPose, Target target) {
         switch (target) {
             case AMP -> {
-                if (aimSubsystem.getShooterPos() >= Math.toRadians(95)) ampAngleHit = true;
-                if (ampAngleHit) return Math.toRadians(55);
-                return (controller.getLeftBumper()) ? Math.toRadians(96) : Math.toRadians(85);
+                if (aimSubsystem.getShooterPos() >= Math.toRadians(ConfigManager.getInstance().get("amp_angle_hit_threshold", Double.class, 95.0))) /* 95 */ ampAngleHit = true;
+                if (ampAngleHit) return Math.toRadians(ConfigManager.getInstance().get("amp_ange_hit_goto", Double.class, 55.0)); // 55
+                return (controller.getLeftBumper()) ? Math.toRadians(ConfigManager.getInstance().get("amp_flick_angle", Double.class, 95.0)) : Math.toRadians(ConfigManager.getInstance().get("amp_shoot_angle", Double.class, 85.0));
             }
             case SPEAKER -> {
                 return ShooterUtils.calculateShooterAngle(
@@ -109,7 +110,7 @@ public class AimCommand extends Command {
                 );
             }
             case LOW_PASS -> {
-                return Math.toRadians(20); //TODO: to tune
+                return Math.toRadians(ConfigManager.getInstance().get("low_pass_angle", Double.class, 20.0)); //TODO: to tune
             }
             default -> {
                 return AimConstants.DEFAULT_ANGLE;
