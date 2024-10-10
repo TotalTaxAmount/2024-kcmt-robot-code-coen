@@ -35,8 +35,7 @@ public class IntakeCommand extends Command {
     }
 
     @Override
-    public void execute() { // TODO: WTH is all this
-        ConfigManager configManager = ConfigManager.getInstance();
+    public void execute() {
         if (!this.intakeSubsystem.getFrontLinebreak() || continuous) {
             intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_normal_speed", Double.class, 0.3));
             startRotations = intakeSubsystem.getTopMotorRotations();

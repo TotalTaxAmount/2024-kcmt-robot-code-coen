@@ -124,7 +124,7 @@ public class RobotContainer {
             new ShootCommand(intakeSubsystem, ledSubsystem)
     );
 
-    // TODO: Why this exist?
+    // TODO: Why does this exist?
     new JoystickButton(primaryController, XboxController.Button.kA.value).whileTrue(
             new RunCommand(() -> {
               ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe);

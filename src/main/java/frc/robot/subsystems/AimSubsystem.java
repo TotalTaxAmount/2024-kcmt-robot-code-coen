@@ -41,7 +41,6 @@ public class AimSubsystem extends SubsystemBase {
      * Subsystem for aiming the shooter
      */
     public AimSubsystem() {
-        // TODO: reverse the motors if needed
         rightMotor.setInverted(false);
         leftMotor.setInverted(true);
 

@@ -41,7 +41,6 @@ public class ConfigManager {
     /**
      * Util class to allow for good network table tuning
      */
-    // TODO: Add support for vales besides doubles
     public ConfigManager() {
         try {
             if (configFile.createNewFile() || configFile.length() == 0) {
@@ -61,6 +60,7 @@ public class ConfigManager {
         }
 
         this.json = parseConfig();
+        this.initNT();
         this.initListener();
     }
 
@@ -68,10 +68,9 @@ public class ConfigManager {
     /**
      * Add a listener to network tables for a change in one of the tuning values
      */
-    @SuppressWarnings("unchecked")
     private void initListener() {
         NTTune.getTable().addListener((EnumSet.of(NetworkTableEvent.Kind.kValueAll)), (table, key1, event) -> {
-            this.json.put(key1, table.getValue(key1).getValue());
+            this.set(key1, table.getValue(key1).getValue());
             System.out.println("[DEBUG] Updated [" + key1 + "] to " + table.getEntry(key1).getDouble(-1));
             this.saveConfig();
         });
@@ -112,7 +111,7 @@ public class ConfigManager {
     public void initNT() {
         for (Object key : this.json.keySet()) {
             Object value = this.json.get(key);
-            if (value instanceof Double) {
+            if (value instanceof Double || value instanceof Integer) { // TODO: Split ints and doubles
                 NTTune.setDouble((String) key, (Double) value);
             } else if (value instanceof Boolean) {
                 NTTune.setBoolean((String) key, (Boolean) value);
@@ -132,9 +131,10 @@ public class ConfigManager {
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> type, T defaultValue) {
-        if (!NTTune.getTable().getEntry(key).exists()) {
-            System.out.println("[WARN] " + key + " does not exist in network tables, creating a setting to " + defaultValue);
+        if (!NTTune.getTable().getEntry(key).exists() || !this.json.containsKey(key)) {
+            System.out.println("[WARN] " + key + " does not exist in network tables or json, creating a setting to " + defaultValue);
             NTTune.setEntry(key, type, defaultValue);
+            this.set(key, defaultValue);
         }
         if (type.equals(Double.class) || type.equals(Integer.class)) {
             return (T) getDouble(key, (double)defaultValue);
@@ -142,6 +142,8 @@ public class ConfigManager {
             return (T) getString(key, (String) defaultValue);
         } else if (type.equals(Boolean.class)) {
             return (T) getBoolean(key, (boolean) defaultValue);
+        } else {
+            System.out.println("[WARN] Could not get " + type.getSimpleName() + " " + key);
         }
 
         return defaultValue;
@@ -243,7 +245,7 @@ public class ConfigManager {
             Object obj = parser.parse(new FileReader(this.configFile));
             jObj = (JSONObject) obj;
         } catch (IOException | ParseException e ) {
-            System.out.println("[ERROR] An error occurred: " + e);
+            System.out.println("[ERROR] An error occurred while attempting to parse the config file: " + e);
         }
         return jObj;
     }
