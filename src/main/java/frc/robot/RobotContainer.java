@@ -60,19 +60,19 @@ public class RobotContainer {
   public RobotContainer() {
 
     // Register commands for PathPlanner
-//    NamedCommands.registerCommand("AutoSpinUp", new SpinUpCommand(shooterSubsystem, Target.SPEAKER).withTimeout(20));
-//    NamedCommands.registerCommand("AutoIntake", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
-//    NamedCommands.registerCommand("AutoIntakeContinuous4", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(4.0));
-//    NamedCommands.registerCommand("AutoIntakeContinuous1.5", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
-//    NamedCommands.registerCommand("AutoShoot", new ShootCommand(intakeSubsystem, ledSubsystem).withTimeout(0.3));
-//    NamedCommands.registerCommand("AutoAim", new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.SPEAKER).withTimeout(20));
+    NamedCommands.registerCommand("AutoSpinUp", new SpinUpCommand(shooterSubsystem, Target.SPEAKER).withTimeout(20));
+    NamedCommands.registerCommand("AutoIntake", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
+    NamedCommands.registerCommand("AutoIntakeContinuous4", new InstantCommand()); // intakeSubsystem, ledSubsystem, false).withTimeout(4.0));
+    NamedCommands.registerCommand("AutoIntakeContinuous1.5", new InstantCommand()); //intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
+    NamedCommands.registerCommand("AutoShoot", new ShootCommand(intakeSubsystem, ledSubsystem).withTimeout(0.3));
+    NamedCommands.registerCommand("AutoAim", new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.SPEAKER).withTimeout(20));
 
-    NamedCommands.registerCommand("AutoSpinUp", new InstantCommand());
-    NamedCommands.registerCommand("AutoIntake", new InstantCommand());
-    NamedCommands.registerCommand("AutoIntakeContinuous4", new InstantCommand());
-    NamedCommands.registerCommand("AutoIntakeContinuous1.5", new InstantCommand());
-    NamedCommands.registerCommand("AutoShoot", new InstantCommand());
-    NamedCommands.registerCommand("AutoAim", new InstantCommand());
+//    NamedCommands.registerCommand("AutoSpinUp", new InstantCommand());
+//    NamedCommands.registerCommand("AutoIntake", new InstantCommand());
+//    NamedCommands.registerCommand("AutoIntakeContinuous4", new InstantCommand());
+//    NamedCommands.registerCommand("AutoIntakeContinuous1.5", new InstantCommand());
+//    NamedCommands.registerCommand("AutoShoot", new InstantCommand());
+//    NamedCommands.registerCommand("AutoAim", new InstantCommand());
 
 
     // Set up auto chooser
@@ -145,55 +145,96 @@ public class RobotContainer {
     // =============================================================================
     // **************************SECONDARY CONTROLLER*******************************
     // =============================================================================
-
     new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
-            new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
-    );
-
-    new POVButton(secondaryController, 90).whileTrue(
-            new IntakeCommand(intakeSubsystem, ledSubsystem, false)
-    );
-
-    new POVButton(secondaryController, 0).whileTrue(
-            new RunCommand(() -> aimSubsystem.setAngle(Math.toRadians(45)), aimSubsystem)
-    );
-
-    new POVButton(secondaryController, 180).whileTrue(
-            new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
-    );
-
-    new POVButton(secondaryController, 270).whileTrue(
             new ParallelCommandGroup(
+                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.SPEAKER),
                     new RotateTo(swerveSubsystem, primaryController, Target.SPEAKER),
-                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.SPEAKER)
+                    new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
             )
     );
 
-    new JoystickButton(secondaryController, XboxController.Button.kRightStick.value).whileTrue(
-            new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
-    );
-
-
-    new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
+    new JoystickButton(secondaryController, XboxController.Button.kRightBumper.value).whileTrue(
             new ParallelCommandGroup(
-                    new AimCommand(aimSubsystem ,swerveSubsystem, primaryController, Target.AMP),
+                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.AMP),
                     new SpinUpCommand(shooterSubsystem, Target.AMP)
             )
     );
 
-    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
-            new RunCommand(() -> this.mode = Constants.Mode.AMP)
-    );
-    new JoystickButton(secondaryController, XboxController.Button.kB.value).whileTrue(
-            new RunCommand(() -> this.mode = Constants.Mode.SPEAKER)
+    new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
+            new ParallelCommandGroup(
+                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.HIGH_PASS),
+                    new RotateTo(swerveSubsystem, primaryController, Target.HIGH_PASS),
+                    new SpinUpCommand(shooterSubsystem, Target.HIGH_PASS)
+            )
     );
 
     new JoystickButton(secondaryController, XboxController.Button.kA.value).whileTrue(
-            new RunCommand(() -> this.mode = Constants.Mode.PASSING)
+            new IntakeCommand(intakeSubsystem, ledSubsystem, false)
     );
-    new JoystickButton(secondaryController, XboxController.Button.kRightBumper.value).whileTrue(
-            new RunCommand(() -> this.mode = Constants.Mode.DEFAULT)
+
+    new POVButton(secondaryController, 0).whileTrue(
+            new RunCommand(() -> intakeSubsystem.setSpeed(-ConfigManager.getInstance().get("intake_normal_speed", Double.class, 0.0)))
+    ).whileFalse(
+            new RunCommand(() -> intakeSubsystem.setSpeed(0.0))
     );
+
+    new POVButton(secondaryController, 180).whileTrue(
+            new RunCommand(() -> intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_normal_speed", Double.class, 0.0)))
+    ).whileFalse(
+            new RunCommand(() -> intakeSubsystem.setSpeed(0.0))
+    );
+
+
+    new POVButton(secondaryController, 90).whileTrue(
+            new RunCommand(() -> aimSubsystem.setAngle(ConfigManager.getInstance().get("static_angle", Double.class, 60.0)), aimSubsystem)
+    );
+
+
+//    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
+//            new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
+//    );
+//
+//    new POVButton(secondaryController, 90).whileTrue(
+//            new IntakeCommand(intakeSubsystem, ledSubsystem, false)
+//    );
+//
+//
+//    new POVButton(secondaryController, 180).whileTrue(
+//            new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
+//    );
+//
+//    new POVButton(secondaryController, 270).whileTrue(
+//            new ParallelCommandGroup(
+//                    new RotateTo(swerveSubsystem, primaryController, Target.SPEAKER),
+//                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.SPEAKER)
+//            )
+//    );
+//
+//    new JoystickButton(secondaryController, XboxController.Button.kRightStick.value).whileTrue(
+//            new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
+//    );
+//
+//
+//    new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
+//            new ParallelCommandGroup(
+//                    new AimCommand(aimSubsystem ,swerveSubsystem, primaryController, Target.AMP),
+//                    new SpinUpCommand(shooterSubsystem, Target.AMP)
+//            )
+//    );
+//
+//    new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(
+//            new RunCommand(() -> this.mode = Constants.Mode.AMP)
+//    );
+//    new JoystickButton(secondaryController, XboxController.Button.kB.value).whileTrue(
+//            new RunCommand(() -> this.mode = Constants.Mode.SPEAKER)
+//    );
+//
+//    new JoystickButton(secondaryController, XboxController.Button.kA.value).whileTrue(
+//            new RunCommand(() -> this.mode = Constants.Mode.PASSING)
+//    );
+//    new JoystickButton(secondaryController, XboxController.Button.kRightBumper.value).whileTrue(
+//            new RunCommand(() -> this.mode = Constants.Mode.DEFAULT)
+//    );
   }
 
 

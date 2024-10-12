@@ -14,7 +14,7 @@ public class IntakeCommand extends Command {
 
     private boolean done = false;
 
-    private double rotationsUntilStop = 2.5;
+    private double rotationsUntilStop = 3;
 
     private String ledState = "off";
 
