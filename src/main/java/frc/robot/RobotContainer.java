@@ -175,7 +175,10 @@ public class RobotContainer {
 
 
     new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
-            new RunCommand(() -> this.mode = Constants.Mode.INTAKE)
+            new ParallelCommandGroup(
+                    new AimCommand(aimSubsystem ,swerveSubsystem, primaryController, Target.AMP),
+                    new SpinUpCommand(shooterSubsystem, Target.AMP)
+            )
     );
 
     new JoystickButton(secondaryController, XboxController.Button.kY.value).whileTrue(

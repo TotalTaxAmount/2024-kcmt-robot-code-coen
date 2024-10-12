@@ -12,10 +12,7 @@ import frc.robot.constants.DrivetrainConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.utils.ConfigManager;
-import frc.robot.utils.NetworkTableUtils;
-import frc.robot.utils.SwerveUtils;
-import frc.robot.utils.VisionUtils;
+import frc.robot.utils.*;
 
 public class RotateTo extends Command {
     private final SwerveSubsystem swerveSubsystem;
@@ -133,24 +130,24 @@ public class RotateTo extends Command {
 
         if (Math.abs(controller.getRightX()) > ConfigManager.getInstance().get("rotateto_override_threshold", Double.class,0.05))  {
             swerveSubsystem.drive(
-                    controller.getLeftY() * DrivetrainConstants.drivingSpeedScalar,
-                    controller.getLeftX() * DrivetrainConstants.drivingSpeedScalar,
-                    controller.getRightX() * DrivetrainConstants.rotationSpeedScalar,
+                    MathUtils.deadband(controller.getLeftY(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar,
+                    MathUtils.deadband(controller.getLeftX(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar,
+                    MathUtils.deadband(controller.getRightX(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.rotationSpeedScalar,
                     true,
                     true
             );
         } else if (this.target == Target.AMP || this.target == Target.AMP_SHOOT) {
             swerveSubsystem.drive(
                     movement,
-                    controller.getLeftX() * DrivetrainConstants.drivingSpeedScalar,
+                    MathUtils.deadband(controller.getLeftX(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar,
                     angle,
                     true,
                     true
             );
         } else {
             swerveSubsystem.drive(
-                    controller.getLeftY() * DrivetrainConstants.drivingSpeedScalar,
-                    controller.getLeftX() * DrivetrainConstants.drivingSpeedScalar,
+                    MathUtils.deadband(controller.getLeftY(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar,
+                    MathUtils.deadband(controller.getLeftX(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar,
                     angle,
                     true,
                     true

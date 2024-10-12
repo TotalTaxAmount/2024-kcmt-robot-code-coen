@@ -70,8 +70,8 @@ public class SwerveSubsystem extends SubsystemBase {
     private double currentTranslationMagnitude = 0.0;
 
     // Slew Rate Limiters
-    private final SlewRateLimiter magnitudeLimiter = new SlewRateLimiter(DrivetrainConstants.magnitudeSlewRate);
-    private final SlewRateLimiter rotationLimiter = new SlewRateLimiter(DrivetrainConstants.rotationalSlewRate);
+    private SlewRateLimiter magnitudeLimiter = new SlewRateLimiter(ConfigManager.getInstance().get("magnitude_slew", Double.class, DrivetrainConstants.magnitudeSlewRate));
+    private SlewRateLimiter rotationLimiter = new SlewRateLimiter(ConfigManager.getInstance().get("rotation_slew", Double.class, DrivetrainConstants.rotationalSlewRate));
 
     // Slew Rate Time
     private double previousTime = WPIUtilJNI.now() * 1e-6;
@@ -177,6 +177,7 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         NTUtils.setDouble("Gyro Angle", gyro.getAngle());
+
 
 //        if (!DriverStation.isAutonomous())
 //            gyro.setAngleAdjustment(180);

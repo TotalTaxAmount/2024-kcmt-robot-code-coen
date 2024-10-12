@@ -12,9 +12,9 @@ public class DrivetrainConstants {
     public static final double maxSpeedMetersPerSecond = 6;
     public static final double maxAngularSpeed = 2 * Math.PI;
 
-    public static final double directionSlewRate = 18.0; // rads/sec - turning was 4.0
-    public static final double magnitudeSlewRate = 22.0; // percent/second (1 = 100%) - forward/backward/traverse - was 20.0
-    public static final double rotationalSlewRate = 30.0; // percent/second (1 = 100%) - rotation was 50.0
+    public static final double directionSlewRate = 20.0; // rads/sec - turning was 4.0
+    public static final double magnitudeSlewRate = 24.0; // percent/second (1 = 100%) - forward/backward/traverse - was 20.0
+    public static final double rotationalSlewRate = 35.0; // percent/second (1 = 100%) - rotation was 50.0
 
     public static final double drivingSpeedScalar = -4.0; //make positive so gyroreset with intake forward
     public static final double rotationSpeedScalar = -3 * Math.PI;//make positive so gyroreset with intake forward

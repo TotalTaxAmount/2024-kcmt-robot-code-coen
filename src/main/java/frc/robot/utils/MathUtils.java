@@ -13,7 +13,6 @@ public class MathUtils {
 
     public static double deadband(double value, double deadband) {
         if (Math.abs(value) <= deadband) {
-            System.out.println("Deadband");
             return 0.0;
         }
 
