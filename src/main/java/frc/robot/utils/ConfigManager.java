@@ -1,9 +1,12 @@
 package frc.robot.utils;
 
 import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -42,6 +45,7 @@ public class ConfigManager {
      * Util class to allow for good network table tuning
      */
     public ConfigManager() {
+        System.out.println("[INFO] Hello from config utils");
         try {
             if (configFile.createNewFile() || configFile.length() == 0) {
                 System.out.println("[INFO] Created tuning file");
@@ -108,19 +112,35 @@ public class ConfigManager {
      * Add all the config options to network tables
      * should be run on robot power on.
      */
-    public void initNT() {
+    public void initNT(){
+        SendableChooser<Object> removeKey = new SendableChooser<>();
+
         for (Object key : this.json.keySet()) {
             Object value = this.json.get(key);
-            if (value instanceof Double || value instanceof Integer) { // TODO: Split ints and doubles
+            removeKey.addOption((String) key, value);
+            if (value.getClass().equals(Double.class)) { // TODO: Split ints and doubles
                 NTTune.setDouble((String) key, (Double) value);
-            } else if (value instanceof Boolean) {
+            } else if (value.getClass().equals(Boolean.class)) {
                 NTTune.setBoolean((String) key, (Boolean) value);
-            } else if (value instanceof String) {
+            } else if (value.getClass().equals(String.class)) {
                 NTTune.setString((String) key, (String) value);
             } else {
                 System.out.println("[WARN] Value is an unknown type (" + value.getClass().getSimpleName() + ")");
             }
         }
+
+        removeKey.onChange((value) -> {
+            for (Object k : this.json.keySet()) {
+                if (this.json.get(k).equals(value)) {
+                    this.json.remove(k);
+                    System.out.println("[DEBUG] Removed [" + k + "]");
+                    this.saveConfig();
+                }
+            }
+        });
+
+        SmartDashboard.putData(removeKey);
+
     }
 
     /**

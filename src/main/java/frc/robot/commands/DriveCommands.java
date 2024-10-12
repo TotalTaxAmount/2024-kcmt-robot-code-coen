@@ -2,7 +2,10 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.constants.DrivetrainConstants;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.utils.ConfigManager;
+import frc.robot.utils.MathUtils;
 
 import java.util.function.DoubleSupplier;
 
@@ -34,9 +37,9 @@ public class DriveCommands extends Command {
     // Don't write javadoc for wpilib functions
     @Override
     public void execute() {
-        double forwardDesired = MathUtil.applyDeadband(forward.getAsDouble(), 0.06);
-        double sidewaysDesired = MathUtil.applyDeadband(sideways.getAsDouble(), 0.06);
-        double radiansDesired = MathUtil.applyDeadband(radians.getAsDouble(), 0.06);
+        double forwardDesired = MathUtils.deadband(forward.getAsDouble(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar;
+        double sidewaysDesired = MathUtils.deadband(sideways.getAsDouble(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.drivingSpeedScalar;
+        double radiansDesired = MathUtils.deadband(radians.getAsDouble(), ConfigManager.getInstance().get("controller_deadband", Double.class, 0.0)) * DrivetrainConstants.rotationSpeedScalar;
 
         swerveSubsystem.drive(forwardDesired, sidewaysDesired, radiansDesired, fieldRelativeFromButton, true);
     }

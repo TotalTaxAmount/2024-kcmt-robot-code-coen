@@ -2,6 +2,7 @@ package frc.robot.constants;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import org.opencv.core.Mat;
@@ -14,7 +15,7 @@ public class VisionConstants {
 
     public static final Transform3d APRILTAG_PHOTON_CAM_TRANSFORM = new Transform3d(
             new Translation3d(-0.3048 ,-0.2286, 0.2286),
-            new Rotation3d(Math.PI, Math.toRadians(30), Math.PI));
+            new Rotation3d(Math.PI, Math.toRadians(30), Math.PI + Math.toRadians(2)));
 
     public static final double CAM_HEIGHT_M = 0.2794;
 
@@ -25,6 +26,10 @@ public class VisionConstants {
     public static final int NOTE_CAM_MAX_WIDTH_PXLS = 1280;
 
     public static final double NOTE_CAM_OFFSET = Math.toRadians(32);
+
+    public static final Translation2d NOTE_PHOTON_TRANSLATION = new Translation2d(
+            0.23, 0.33
+    );
 
     public static final double MOVEMENT_P = 0.0; //TODO: tune
     public static final double MOVEMENT_I = 0.0; //TODO: tune

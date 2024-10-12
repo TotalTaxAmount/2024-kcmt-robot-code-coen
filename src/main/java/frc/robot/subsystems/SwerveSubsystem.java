@@ -242,7 +242,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
             estimatedRobotPose.ifPresent(robotPose -> {
 
-                if (cam.getCameraTable().getEntry("targetPose").getDoubleArray(new double[]{})[0] - 0.4 > ConfigManager.getInstance().get("photon_cutoff_dist_m", Double.class, 4.0 )) return;
+                if (cam.getCameraTable().getEntry("targetPose").getDoubleArray(new double[]{})[0] > ConfigManager.getInstance().get("photon_cutoff_dist_m", Double.class, 4.0 )) return;
 
                 poseEstimator.addVisionMeasurement(
                     robotPose.estimatedPose.toPose2d(),

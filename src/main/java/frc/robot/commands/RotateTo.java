@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -72,7 +73,9 @@ public class RotateTo extends Command {
                 Pose2d robotPose = swerveSubsystem.getPose();
 
                 Pose2d notePose = new Pose2d(robotPose.getX() - Math.cos(robotPose.getRotation().getRadians() - Math.toRadians(VisionUtils.getNoteTX() - VisionConstants.NOTE_CAM_OFFSET)) * dist,
-                        robotPose.getY() - Math.sin(robotPose.getRotation().getRadians() - Math.toRadians(VisionUtils.getNoteTX() - VisionConstants.NOTE_CAM_OFFSET)) * dist, new Rotation2d());
+                        robotPose.getY() - Math.sin(robotPose.getRotation().getRadians() - Math.toRadians(VisionUtils.getNoteTX() - VisionConstants.NOTE_CAM_OFFSET)) * dist, new Rotation2d()).plus(new Transform2d(
+                                VisionConstants.NOTE_PHOTON_TRANSLATION, new Rotation2d()
+                ));
 
                 NTDebug.setDoubleArray("Note Pose", new double[]{
                         notePose.getX(),
@@ -115,7 +118,8 @@ public class RotateTo extends Command {
     public void execute() {
 
         double angle = this.rotatePID.calculate(swerveSubsystem.getPose().getRotation().getRadians(),
-                SwerveUtils.rotateToPose(swerveSubsystem.getPose(), this.rotateToPose));
+                SwerveUtils.rotateToPose(swerveSubsystem.getPose(), this.rotateToPose) + (this.target == Target.NOTE ? Math.PI : 0.0)
+        );
 
         double movement = this.movementPID.calculate(swerveSubsystem.getPose().getX(),
                 this.rotateToPose.getX());
@@ -127,7 +131,7 @@ public class RotateTo extends Command {
                     (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) ? -Math.PI / 2 : Math.PI / 2);
         }
 
-        if (Math.abs(controller.getRightX()) > ConfigManager.getInstance().get("rotateto_override_threshold", Double.class,0.05) /* 0.05 */) {
+        if (Math.abs(controller.getRightX()) > ConfigManager.getInstance().get("rotateto_override_threshold", Double.class,0.05))  {
             swerveSubsystem.drive(
                     controller.getLeftY() * DrivetrainConstants.drivingSpeedScalar,
                     controller.getLeftX() * DrivetrainConstants.drivingSpeedScalar,

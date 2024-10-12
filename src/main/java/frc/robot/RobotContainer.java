@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.commands.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -44,7 +45,11 @@ public class RobotContainer {
 
   private final NetworkTableUtils NTTune = new NetworkTableUtils("Tune");
 
-  private Constants.Mode mode;
+  private Constants.Mode mode = Constants.Mode.DEFAULT;
+
+  private Constants.Mode prevMode = mode;
+
+  private Command modeCurrentCommand = new InstantCommand();
 
   Controller testController = new Controller(2);
 
@@ -55,11 +60,11 @@ public class RobotContainer {
   public RobotContainer() {
 
     // Register commands for PathPlanner
-//    NamedCommands.registerCommand("AutoSpinUp", new SpinUpCommand(Target.SPEAKER, shooterSubsystem).withTimeout(20));
-//    NamedCommands.registerCommand("AutoIntake", new IntakeCommand(intakeSubsystem, false).withTimeout(1.5));
-//    NamedCommands.registerCommand("AutoIntakeContinuous4", new IntakeCommand(intakeSubsystem, true).withTimeout(4.0));
-//    NamedCommands.registerCommand("AutoIntakeContinuous1.5", new IntakeCommand(intakeSubsystem, true).withTimeout(1.5));
-//    NamedCommands.registerCommand("AutoShoot", new ShootCommand(intakeSubsystem).withTimeout(0.3));
+//    NamedCommands.registerCommand("AutoSpinUp", new SpinUpCommand(shooterSubsystem, Target.SPEAKER).withTimeout(20));
+//    NamedCommands.registerCommand("AutoIntake", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
+//    NamedCommands.registerCommand("AutoIntakeContinuous4", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(4.0));
+//    NamedCommands.registerCommand("AutoIntakeContinuous1.5", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
+//    NamedCommands.registerCommand("AutoShoot", new ShootCommand(intakeSubsystem, ledSubsystem).withTimeout(0.3));
 //    NamedCommands.registerCommand("AutoAim", new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.SPEAKER).withTimeout(20));
 
     NamedCommands.registerCommand("AutoSpinUp", new InstantCommand());
@@ -95,9 +100,9 @@ public class RobotContainer {
     swerveSubsystem.setDefaultCommand(
             new DriveCommands(
                     swerveSubsystem,
-                    () -> primaryController.getLeftY() * DrivetrainConstants.drivingSpeedScalar,
-                    () -> primaryController.getLeftX() * DrivetrainConstants.drivingSpeedScalar,
-                    () -> primaryController.getRightX() * DrivetrainConstants.rotationSpeedScalar,
+                    primaryController::getLeftY,
+                    primaryController::getLeftX,
+                    primaryController::getRightX,
                     true,
                     ConfigManager.getInstance().get("enable_slew_rates", Boolean.class, true)
             )
@@ -142,11 +147,30 @@ public class RobotContainer {
     // =============================================================================
 
     new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
-      new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
+            new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
     );
 
-    new JoystickButton(secondaryController, XboxController.Axis.kLeftTrigger.value).whileTrue(
-            new SpinUpCommand(shooterSubsystem, Target.HIGH_PASS)
+    new POVButton(secondaryController, 90).whileTrue(
+            new IntakeCommand(intakeSubsystem, ledSubsystem, false)
+    );
+
+    new POVButton(secondaryController, 0).whileTrue(
+            new RunCommand(() -> aimSubsystem.setAngle(Math.toRadians(45)), aimSubsystem)
+    );
+
+    new POVButton(secondaryController, 180).whileTrue(
+            new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
+    );
+
+    new POVButton(secondaryController, 270).whileTrue(
+            new ParallelCommandGroup(
+                    new RotateTo(swerveSubsystem, primaryController, Target.SPEAKER),
+                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.SPEAKER)
+            )
+    );
+
+    new JoystickButton(secondaryController, XboxController.Button.kRightStick.value).whileTrue(
+            new SpinUpCommand(shooterSubsystem, Target.SPEAKER)
     );
 
 
@@ -164,8 +188,8 @@ public class RobotContainer {
     new JoystickButton(secondaryController, XboxController.Button.kA.value).whileTrue(
             new RunCommand(() -> this.mode = Constants.Mode.PASSING)
     );
-    new JoystickButton(secondaryController, XboxController.Button.kLeftBumper.value).whileTrue(
-            new RunCommand(() -> this.mode = Constants.Mode.OFF)
+    new JoystickButton(secondaryController, XboxController.Button.kRightBumper.value).whileTrue(
+            new RunCommand(() -> this.mode = Constants.Mode.DEFAULT)
     );
   }
 
@@ -181,12 +205,12 @@ public class RobotContainer {
 
 
   public void robotInit() {
-    ConfigManager.getInstance().initNT();
   }
 
   public void enableInit() {
     aimSubsystem.resetPID();
     ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off);
+    ConfigManager.getInstance().initNT();
   }
 
   public void disableInit() {
@@ -243,36 +267,42 @@ public class RobotContainer {
    */
   public void modesCommandScheduler() {
     this.NTModeInfo.setString("Current mode", this.mode.toString());
-
     CommandScheduler CSInstance = CommandScheduler.getInstance();
-    switch (this.mode) {
-      case INTAKE -> CSInstance.schedule(
-              new ParallelCommandGroup(
-                      new RunCommand(aimSubsystem::reset, aimSubsystem),
-                      new IntakeCommand(intakeSubsystem, ledSubsystem,false).finallyDo(() -> this.mode = Constants.Mode.OFF),
-                      new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
-              )
-      );
-      case SPEAKER, AMP -> {
-        Target target = this.mode == Constants.Mode.SPEAKER ? Target.SPEAKER : Target.AMP;
-        if (swerveSubsystem.isCloseToUs()) {
-          CSInstance.schedule(
-                  new ParallelCommandGroup(
-                          new SpinUpCommand(shooterSubsystem, target),
-                          new AimCommand(aimSubsystem, swerveSubsystem, primaryController, target),
-                          new RotateTo(swerveSubsystem, primaryController, target)
-                  )
-          );
+
+    if (this.mode != this.prevMode) {
+      this.prevMode = this.mode;
+      CSInstance.cancel(this.modeCurrentCommand);
+
+      switch (this.mode) {
+        case INTAKE -> this.modeCurrentCommand = new ParallelCommandGroup(
+//                      new RunCommand(aimSubsystem::reset, aimSubsystem),
+                        new IntakeCommand(intakeSubsystem, ledSubsystem,false).finallyDo(() -> {
+                          System.out.println("Got note");
+                          this.mode = Constants.Mode.DEFAULT;
+                        }),
+                        new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
+                );
+        case SPEAKER, AMP -> {
+          Target target = this.mode == Constants.Mode.SPEAKER ? Target.SPEAKER : Target.AMP;
+          if (swerveSubsystem.isCloseToUs()) {
+                    this.modeCurrentCommand = new ParallelCommandGroup(
+                            new SpinUpCommand(shooterSubsystem, target),
+                            new AimCommand(aimSubsystem, swerveSubsystem, primaryController, target),
+                            new RotateTo(swerveSubsystem, primaryController, target)
+                    );
+          }
+        }
+        case PASSING -> this.modeCurrentCommand = new ParallelCommandGroup(
+                        new SpinUpCommand(shooterSubsystem, Target.LOW_PASS /* Dont know if low or high rn*/),
+                        new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.LOW_PASS),
+                        new RotateTo(swerveSubsystem, primaryController, Target.LOW_PASS)
+                );
+        case DEFAULT -> {
+          this.modeCurrentCommand = new InstantCommand();
         }
       }
-      case PASSING -> CSInstance.schedule(
-              new ParallelCommandGroup(
-                      new SpinUpCommand(shooterSubsystem, Target.LOW_PASS /* Dont know if low or high rn*/),
-                      new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.LOW_PASS),
-                      new RotateTo(swerveSubsystem, primaryController, Target.LOW_PASS)
-              )
-      );
-      case OFF -> System.out.println("Nothing fancy");
+
+      CSInstance.schedule(this.modeCurrentCommand);
     }
   }
 }

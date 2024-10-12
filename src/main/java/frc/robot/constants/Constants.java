@@ -28,6 +28,6 @@ public final class Constants {
     SPEAKER,
     AMP,
     PASSING,
-    OFF
+    DEFAULT
   }
 }

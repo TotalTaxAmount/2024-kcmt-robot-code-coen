@@ -28,6 +28,7 @@ public class ShooterUtils {
 
         // Constants
         double g = 9.81;  // Gravity in m/s^2
+        shooterRPM -= ConfigManager.getInstance().get("shooter_rpm_drop", Double.class, 2000.0);
 
         // Calculate initial velocity
         double v0 = (shooterRPM * Math.PI * wheelDiameter) / 60.0;
