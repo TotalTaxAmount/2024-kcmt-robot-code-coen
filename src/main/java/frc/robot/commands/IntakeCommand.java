@@ -14,9 +14,9 @@ public class IntakeCommand extends Command {
 
     private boolean done = false;
 
-    private double rotationsUntilStop = 3;
 
     private String ledState = "off";
+
 
     private double startRotations;
 
@@ -39,8 +39,10 @@ public class IntakeCommand extends Command {
         if (!this.intakeSubsystem.getFrontLinebreak() || continuous) {
             intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_normal_speed", Double.class, 0.3));
             startRotations = intakeSubsystem.getTopMotorRotations();
+        } else if (!this.intakeSubsystem.getBackLinebreak()) {
+            intakeSubsystem.setSpeed(ConfigManager.getInstance().get("intake_slow_speed", Double.class, 0.1));
         } else {
-            if (intakeSubsystem.getTopMotorRotations() - startRotations > rotationsUntilStop) {
+            if (intakeSubsystem.getTopMotorRotations() - startRotations > ConfigManager.getInstance().get("intake_rotations_to_stop", Double.class, 2.7)) {
                 intakeSubsystem.setSpeed(0);
                 this.done = true;
             } else {

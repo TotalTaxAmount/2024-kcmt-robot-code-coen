@@ -148,6 +148,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * This subsystem manages all the swerve drive logic and also gives data to odometry
      */
     public SwerveSubsystem() {
+        ConfigManager configManager = ConfigManager.getInstance();
         // PathPlanner stuff
         AutoBuilder.configureHolonomic(
                 this::getPose,
@@ -155,8 +156,8 @@ public class SwerveSubsystem extends SubsystemBase {
                 this::getRobotRelativeSpeeds,
                 this::driveRobotRelative,
                 new HolonomicPathFollowerConfig(
-                        new PIDConstants(5.5, 0.0, 0.2), //1.8 // 2.7
-                        new PIDConstants(3, 0.0, 0.2), //1.0 // 1.8
+                        new PIDConstants(configManager.get("pp_translation_p", Double.class,5.5), 0.0, 0), //1.8 // 2.7
+                        new PIDConstants(configManager.get("pp_rotation_p", Double.class,3.5), 0.0, 0), //1.0 // 1.8
                         3, //swervesubsystem.setmodulestate
                         0.301625,//11.875 meters
                         new ReplanningConfig()

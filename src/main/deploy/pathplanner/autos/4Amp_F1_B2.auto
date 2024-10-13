@@ -38,6 +38,12 @@
                       }
                     },
                     {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
                       "type": "named",
                       "data": {
                         "name": "AutoShoot"
@@ -47,6 +53,12 @@
                       "type": "path",
                       "data": {
                         "pathName": "InitialShootAmp_Front1"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
                       }
                     },
                     {
@@ -74,6 +86,12 @@
                       }
                     },
                     {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
                       "type": "path",
                       "data": {
                         "pathName": "RegularShoot_Back2"
@@ -89,6 +107,12 @@
                       "type": "named",
                       "data": {
                         "name": "AutoShoot"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
                       }
                     }
                   ]

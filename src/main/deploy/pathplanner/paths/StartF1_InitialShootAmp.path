@@ -16,30 +16,30 @@
     },
     {
       "anchor": {
-        "x": 2.245929518094223,
-        "y": 6.74947705217185
+        "x": 2.228440883394735,
+        "y": 6.631008996888311
       },
       "prevControl": {
-        "x": 1.986744753098006,
-        "y": 6.85342019109261
+        "x": 1.9692561183985182,
+        "y": 6.734952135809071
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "InitialShootAmp"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.0,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 540.0
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -158.28,
+    "rotation": -153.07675107908366,
     "rotateFast": false
   },
   "reversed": false,

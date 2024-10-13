@@ -86,8 +86,8 @@ public class AimCommand extends Command {
     private double calculateAngle(Pose2d robotPose, Target target) {
         switch (target) {
             case AMP -> {
-                if (aimSubsystem.getShooterPos() >= Math.toRadians(ConfigManager.getInstance().get("amp_angle_hit_threshold", Double.class, 95.0))) /* 95 */ ampAngleHit = true;
-                if (ampAngleHit) return Math.toRadians(ConfigManager.getInstance().get("amp_ange_hit_goto", Double.class, 55.0)); // 55
+//                if (aimSubsystem.getShooterPos() >= Math.toRadians(ConfigManager.getInstance().get("amp_angle_hit_threshold", Double.class, 95.0))) /* 95 */ ampAngleHit = true;
+//                if (ampAngleHit) return Math.toRadians(ConfigManager.getInstance().get("amp_ange_hit_goto", Double.class, 55.0)); // 55
                 return (controller.getLeftBumper()) ? Math.toRadians(ConfigManager.getInstance().get("amp_flick_angle", Double.class, 95.0)) : Math.toRadians(ConfigManager.getInstance().get("amp_shoot_angle", Double.class, 85.0));
             }
             case SPEAKER -> {

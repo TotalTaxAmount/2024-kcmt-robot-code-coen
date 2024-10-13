@@ -61,10 +61,10 @@ public class RobotContainer {
 
     // Register commands for PathPlanner
     NamedCommands.registerCommand("AutoSpinUp", new SpinUpCommand(shooterSubsystem, Target.SPEAKER).withTimeout(20));
-    NamedCommands.registerCommand("AutoIntake", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
+    NamedCommands.registerCommand("AutoIntake", new IntakeCommand(intakeSubsystem, ledSubsystem, false).withTimeout(2.0));
     NamedCommands.registerCommand("AutoIntakeContinuous4", new InstantCommand()); // intakeSubsystem, ledSubsystem, false).withTimeout(4.0));
     NamedCommands.registerCommand("AutoIntakeContinuous1.5", new InstantCommand()); //intakeSubsystem, ledSubsystem, false).withTimeout(1.5));
-    NamedCommands.registerCommand("AutoShoot", new ShootCommand(intakeSubsystem, ledSubsystem).withTimeout(0.3));
+    NamedCommands.registerCommand("AutoShoot", new ShootCommand(intakeSubsystem, ledSubsystem).withTimeout(0.7));
     NamedCommands.registerCommand("AutoAim", new AimCommand(aimSubsystem, swerveSubsystem, secondaryController, Target.SPEAKER).withTimeout(20));
 
 //    NamedCommands.registerCommand("AutoSpinUp", new InstantCommand());
@@ -169,7 +169,10 @@ public class RobotContainer {
     );
 
     new JoystickButton(secondaryController, XboxController.Button.kA.value).whileTrue(
-            new IntakeCommand(intakeSubsystem, ledSubsystem, false)
+            new ParallelCommandGroup(
+                    new IntakeCommand(intakeSubsystem, ledSubsystem, false),
+                    new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
+            )
     );
 
     new POVButton(secondaryController, 0).whileTrue(

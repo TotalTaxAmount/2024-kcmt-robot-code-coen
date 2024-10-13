@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5110291876233237,
-        "y": 4.242181516889734
+        "x": 2.5323191856758354,
+        "y": 4.253608161394998
       },
       "isLocked": false,
       "linkedName": "InitialShootStage"
     },
     {
       "anchor": {
-        "x": 2.582648143811913,
-        "y": 4.195589816960884
+        "x": 2.669362341606528,
+        "y": 4.2297745690592246
       },
       "prevControl": {
-        "x": 2.430389846131255,
-        "y": 4.240434301181102
+        "x": 2.5171040439258703,
+        "y": 4.274619053279443
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,14 +50,14 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 5.0,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 540.0
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 162.03724756514777,
+    "rotation": 170.04,
     "rotateFast": false
   },
   "reversed": false,

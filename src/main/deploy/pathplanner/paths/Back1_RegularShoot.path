@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.04,
-        "y": 7.4
+        "x": 8.294090132848854,
+        "y": 7.447309534388522
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.124464098615696,
-        "y": 6.7782525211534805
+        "x": 6.378554231464551,
+        "y": 6.825562055542002
       },
       "isLocked": false,
       "linkedName": "Back1"
@@ -28,18 +28,24 @@
       "linkedName": "RegularShootPosition"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.65,
+      "rotationDegrees": -172.962655315459,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.0,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 540.0
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -176.0,
+    "rotation": -173.2322477363155,
     "rotateFast": false
   },
   "reversed": false,
