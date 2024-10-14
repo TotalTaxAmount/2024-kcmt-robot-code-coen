@@ -94,7 +94,7 @@ public class AimCommand extends Command {
                 return ShooterUtils.calculateShooterAngle(
                         robotPose,
                         speakerPose,
-                        ShooterConstants.SPEAKER_RPM,
+                        ConfigManager.getInstance().get("speaker_spinup_rpm", Double.class, ShooterConstants.PASS_RPM),
                         ShooterConstants.SHOOTER_WHEEL_DIAMETER,
                         ShooterConstants.SHOOTER_HEIGHT
                 );
@@ -103,7 +103,7 @@ public class AimCommand extends Command {
                 return ShooterUtils.calculateShooterAngleForPass(
                         robotPose,
                         passPose,
-                        ShooterConstants.PASS_RPM,
+                        ConfigManager.getInstance().get("pass_spinup_rpm", Double.class, ShooterConstants.PASS_RPM),
                         ShooterConstants.SHOOTER_WHEEL_DIAMETER,
                         ShooterConstants.SHOOTER_HEIGHT,
                         ShooterConstants.STAGE_HEIGHT

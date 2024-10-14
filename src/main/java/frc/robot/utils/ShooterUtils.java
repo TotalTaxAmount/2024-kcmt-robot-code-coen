@@ -71,6 +71,8 @@ public class ShooterUtils {
 
         // Constants
         double g = 9.81;  // Gravity in m/s^2
+        shooterRPM -= ConfigManager.getInstance().get("shooter_rpm_drop", Double.class, 2000.0);
+
 
         // Calculate initial velocity
         double v0 = (shooterRPM * Math.PI * wheelDiameter) / 60.0;
@@ -79,6 +81,7 @@ public class ShooterUtils {
         double dx = targetPose.getX() - robotPose.getX();
         double dy = targetPose.getY() - robotPose.getY();
         double d = Math.sqrt(dx * dx + dy * dy);
+
 
         // Define a function to solve for the angle θ
         Function<Double, Double> equation = (theta) -> {

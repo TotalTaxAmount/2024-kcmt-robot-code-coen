@@ -16,11 +16,9 @@ import frc.robot.commands.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.Constants;
-import frc.robot.constants.DrivetrainConstants;
 import frc.robot.subsystems.*;
 import frc.robot.constants.Constants.Target;
 import frc.robot.utils.ConfigManager;
-import frc.robot.utils.Controller;
 import frc.robot.utils.NetworkTableUtils;
 
 /**
@@ -43,15 +41,11 @@ public class RobotContainer {
 
   private final NetworkTableUtils NTModeInfo = new NetworkTableUtils("Mode Info");
 
-  private final NetworkTableUtils NTTune = new NetworkTableUtils("Tune");
-
   private Constants.Mode mode = Constants.Mode.DEFAULT;
 
   private Constants.Mode prevMode = mode;
 
   private Command modeCurrentCommand = new InstantCommand();
-
-  Controller testController = new Controller(2);
 
   // Auto Chooser
   private final SendableChooser<Command> superSecretMissileTech;
@@ -131,15 +125,11 @@ public class RobotContainer {
 
     // TODO: Why does this exist?
     new JoystickButton(primaryController, XboxController.Button.kA.value).whileTrue(
-            new RunCommand(() -> {
-              ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe);
-            })
+            new RunCommand(() -> ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.GreenStrobe))
     );
 
     new JoystickButton(primaryController, XboxController.Button.kB.value).whileTrue(
-            new RunCommand(() -> {
-              ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off);
-            })
+            new RunCommand(() -> ledSubsystem.setAnimation(LEDSubsystem.AnimationTypes.Off))
     );
 
     // =============================================================================
@@ -162,9 +152,9 @@ public class RobotContainer {
 
     new JoystickButton(secondaryController, XboxController.Button.kX.value).whileTrue(
             new ParallelCommandGroup(
-                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.HIGH_PASS),
-                    new RotateTo(swerveSubsystem, primaryController, Target.HIGH_PASS),
-                    new SpinUpCommand(shooterSubsystem, Target.HIGH_PASS)
+                    new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.LOW_PASS),
+                    new RotateTo(swerveSubsystem, primaryController, Target.LOW_PASS),
+                    new SpinUpCommand(shooterSubsystem, Target.LOW_PASS)
             )
     );
 
@@ -172,6 +162,12 @@ public class RobotContainer {
             new ParallelCommandGroup(
                     new IntakeCommand(intakeSubsystem, ledSubsystem, false),
                     new RotateTo(swerveSubsystem, primaryController, Target.NOTE)
+            )
+    );
+
+    new JoystickButton(secondaryController, XboxController.Button.kB.value).whileTrue(
+            new ParallelCommandGroup(
+                    new IntakeCommand(intakeSubsystem, ledSubsystem, false)
             )
     );
 
@@ -340,13 +336,11 @@ public class RobotContainer {
           }
         }
         case PASSING -> this.modeCurrentCommand = new ParallelCommandGroup(
-                        new SpinUpCommand(shooterSubsystem, Target.LOW_PASS /* Dont know if low or high rn*/),
+                        new SpinUpCommand(shooterSubsystem, Target.LOW_PASS /* Don't know if low or high rn*/),
                         new AimCommand(aimSubsystem, swerveSubsystem, primaryController, Target.LOW_PASS),
                         new RotateTo(swerveSubsystem, primaryController, Target.LOW_PASS)
                 );
-        case DEFAULT -> {
-          this.modeCurrentCommand = new InstantCommand();
-        }
+        case DEFAULT -> this.modeCurrentCommand = new InstantCommand();
       }
 
       CSInstance.schedule(this.modeCurrentCommand);

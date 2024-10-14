@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.294090132848854,
-        "y": 7.447309534388522
+        "x": 8.246422948177308,
+        "y": 7.334099970793602
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.378554231464551,
-        "y": 6.825562055542002
+        "x": 6.330887046793005,
+        "y": 6.712352491947082
       },
       "isLocked": false,
       "linkedName": "Back1"
@@ -38,8 +38,8 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -51,5 +51,5 @@
   "reversed": false,
   "folder": "BackToShoot",
   "previewStartingState": null,
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
