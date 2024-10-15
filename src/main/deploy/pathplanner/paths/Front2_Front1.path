@@ -1,0 +1,73 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.1698677806577518,
+        "y": 5.57
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.805394619434772,
+        "y": 5.594247730282205
+      },
+      "isLocked": false,
+      "linkedName": "Front2"
+    },
+    {
+      "anchor": {
+        "x": 2.7825719052014475,
+        "y": 6.9289289010854676
+      },
+      "prevControl": {
+        "x": 1.793477823266886,
+        "y": 6.696551375811685
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Front1"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.65,
+      "rotationDegrees": -151.17267724925745,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "Start Intake",
+      "waypointRelativePos": 0.45,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "AutoIntake"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -145.53918372862822,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "FrontToFront",
+  "previewStartingState": null,
+  "useDefaultConstraints": true
+}
